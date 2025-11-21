@@ -99,9 +99,8 @@ Stacks all features to form:
 
 ### Score Range Discretization
 The continuous score range **[0, 10]** is split into three ordinal classes:
-- **Low**: 0–3
-- **Mid**: 4–7
-- **High**: 8–10
+- **Low**: 0–5
+- **High**: 6–10
 
 ### Step 1: Classifier (Expert Gating)
 - **Model**: LightGBM Classifier (`LGBMClassifier`)
@@ -109,14 +108,12 @@ The continuous score range **[0, 10]** is split into three ordinal classes:
 - **Training**: Uses engineered features `X_feat`
 - **Output**: Predicts class probabilities for each sample:
   - `P_low`
-  - `P_mid`
   - `P_high`
 
 ### Step 2: Per-Region Regressors (Experts)
 Three specialized LightGBM regressors are trained:
-- **`reg_low`**: Trained on low-score samples (0–3)
-- **`reg_mid`**: Trained on mid-score samples (4–7)
-- **`reg_high`**: Trained on high-score samples (8–10)
+- **`reg_low`**: Trained on low-score samples (0–5)
+- **`reg_high`**: Trained on high-score samples (6–10)
 
 Each regressor specializes in predicting scores within its designated region.
 
@@ -124,12 +121,11 @@ Each regressor specializes in predicting scores within its designated region.
 For each sample:
 1. Compute expert predictions:
    - `pred_low` from `reg_low`
-   - `pred_mid` from `reg_mid`
    - `pred_high` from `reg_high`
 
 2. Combine predictions using soft class probabilities:
    ```
-   final_score = P_low × pred_low + P_mid × pred_mid + P_high × pred_high
+   final_score = P_low × pred_low + P_high × pred_high
    ```
 
 This weighted combination allows the model to leverage specialized experts while smoothly transitioning between score regions.
